@@ -6,7 +6,7 @@ db = client.video_database
 collection = db.video_collection
 
 from flask import Flask, render_template, request
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 app = Flask(__name__)
 UPLOAD_FOLDER = 'videos'
 
