@@ -1,5 +1,5 @@
 import os
-
+# it worked!
 from pymongo import MongoClient
 client = MongoClient('localhost', 27017, username='locobln_mongoroot', password='Start.Mongo!')
 db = client.video_database
@@ -21,8 +21,10 @@ def upload_file():
       dst = os.path.join(UPLOAD_FOLDER, secure_filename(f.filename))
       f.save(dst)
       print('video saved')
-      
+      # TODO upload video to youtube
+      # TODO extend the post
       post = {'title': f.filename}
+      # TODO insert post into database
       return 'file uploaded successfully'
 
 @app.route('/')
