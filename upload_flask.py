@@ -51,7 +51,7 @@ def upload_file():
          'location': location,
          'timestamp': dt.timestamp(dt.now()),
          'type': 'video',                       # resource type
-         'url': 'https://www.youtube.com',
+         'url': 'https://www.youtube.com',      # TODO how to get this url from the youtube api?
          'size': os.stat(dst).st_size,          # filesize in bytes
          }
       print('[MONGO DB] CREATED a new document')
