@@ -1,10 +1,13 @@
-import os
 from datetime import datetime as dt
+import os
+import random
 
 from pymongo import MongoClient
 
 from flask import Flask, render_template, request
 from werkzeug.utils import secure_filename
+
+import youtube as yt
 
 # initialise flask
 app = Flask(__name__)
@@ -24,17 +27,31 @@ def upload_file():
       f.save(dst)
       print('[DIR] SAVED video {} to server'.format(f.filename))
 
-      # TODO upload video to youtube
+      # workaround to get the youtube script to work without parsing arguments
+      class Object(object):
+         pass
+      options = Object()
+      options.file = dst
+      options.title = f.filename
+      options.description = 'Some video description.'
+      # TODO research the appropriate category
+      options.category = '22'   # see https://developers.google.com/youtube/v3/docs/videoCategories/list
+      options.keywords = ''
+      options.privacyStatus = 'unlisted'
+      # get the needed credentials from the client_secret.json
+      youtube = yt.get_authenticated_service()
+      # upload video to youtube
+      yt.initialize_upload(youtube, options)
       
       # construct a document for the mongo db
       doc = {
-         'title': f.filename,
-         'author': 'author',
-         'location': (33.3, 44.4),
+         'title': f.filename,                   # TODO change this to a title
+         'author': author,
+         'location': location,
          'timestamp': dt.timestamp(dt.now()),
-         'type': 'video',
+         'type': 'video',                       # resource type
          'url': 'https://www.youtube.com',
-         'size': 10,
+         'size': os.stat(dst).st_size,          # filesize in bytes
          }
       print('[MONGO DB] CREATED a new document')
       # insert the document into database
@@ -64,6 +81,14 @@ if __name__ == '__main__':
    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
    # constrain max size of uploads to 50MB 
    app.config['MAX_CONTENT_LENGTH'] = 50 * 10**6
-   
+
+   # TODO do this via config files or user input
+   # set parameters for the upload
+   author = 'author'
+   location = (52.436244, 13.345781)
+   # add a bit of randomness to the location
+   location[0] += random.randrange(-100,100,1)/1000
+   location[1] += random.randrange(-100,100,1)/1000
+
    # start flask
    app.run(host='0.0.0.0', debug=True)
