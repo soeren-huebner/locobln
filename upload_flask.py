@@ -1,5 +1,5 @@
 import os
-# it worked!
+
 from pymongo import MongoClient
 client = MongoClient('localhost', 27017, username='locobln_mongoroot', password='Start.Mongo!')
 db = client.video_database
