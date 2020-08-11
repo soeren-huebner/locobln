@@ -17,13 +17,14 @@ def upload():
 @app.route('/uploader', methods = ['GET', 'POST'])
 def upload_file():
    if request.method == 'POST':
+      # TODO generalise to different types of documents
       # save the uploaded file to the server
       f = request.files['file']
       dst = os.path.join(UPLOAD_FOLDER, secure_filename(f.filename))
       f.save(dst)
-      print('video saved')
+      print('[DIR] SAVED video {} to server'.format(f.filename))
 
-      # upload video to youtube
+      # TODO upload video to youtube
       
       # construct a document for the mongo db
       doc = {
@@ -35,9 +36,14 @@ def upload_file():
          'url': 'https://www.youtube.com',
          'size': 10,
          }
-      
-      # insert document into database
+      print('[MONGO DB] CREATED a new document')
+      # insert the document into database
       collection.insert_one(doc)
+      print('[MONGO DB] INSERTED the document to the collection')
+
+      # delete resource from server
+      os.remove(dst)
+      print('[DIR] DELETED video {} from server'.format(f.filename))
       
       return 'file uploaded successfully'
 
@@ -50,8 +56,8 @@ def index():
 if __name__ == '__main__':
    # connect to mongo db
    client = MongoClient('localhost', 27017, username='locobln_mongoroot', password='Start.Mongo!')
-   db = client.video_database
-   collection = db.video_collection
+   db = client['resource_database']
+   collection = db['resource_collection']
 
    # setup the folder where uploaded videos are going to be stored
    UPLOAD_FOLDER = 'videos'
