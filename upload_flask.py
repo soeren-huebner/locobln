@@ -6,6 +6,9 @@ from pymongo import MongoClient
 from flask import Flask, render_template, request
 from werkzeug.utils import secure_filename
 
+# initialise flask
+app = Flask(__name__)
+
 @app.route('/upload')
 def upload():
    # display the upload web page
@@ -49,9 +52,6 @@ if __name__ == '__main__':
    client = MongoClient('localhost', 27017, username='locobln_mongoroot', password='Start.Mongo!')
    db = client.video_database
    collection = db.video_collection
-
-   # initialise flask
-   app = Flask(__name__)
 
    # setup the folder where uploaded videos are going to be stored
    UPLOAD_FOLDER = 'videos'
