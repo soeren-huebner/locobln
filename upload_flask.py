@@ -20,44 +20,47 @@ def upload():
 @app.route('/uploader', methods = ['GET', 'POST'])
 def upload_file():
    if request.method == 'POST':
-      # TODO generalise to different types of documents
-      # save the uploaded file to the server
-      f = request.files['file']
-      dst = os.path.join(UPLOAD_FOLDER, secure_filename(f.filename))
-      f.save(dst)
-      print('[DIR] SAVED video {} to server'.format(f.filename))
+      try:
+         # TODO generalise to different types of documents
+         # save the uploaded file to the server
+         f = request.files['file']
+         dst = os.path.join(UPLOAD_FOLDER, secure_filename(f.filename))
+         f.save(dst)
+         print('[DIR] SAVED video {} to server'.format(f.filename))
 
-      # workaround to get the youtube script to work without parsing arguments
-      class Object(object):
+         # workaround to get the youtube script to work without parsing arguments
+         class Object(object):
+            pass
+         options = Object()
+         options.file = dst
+         options.title = f.filename
+         options.description = 'Some video description.'
+         # TODO research the appropriate category
+         options.category = '22'   # see https://developers.google.com/youtube/v3/docs/videoCategories/list
+         options.keywords = ''
+         options.privacyStatus = 'unlisted'
+         # get the needed credentials from the client_secret.json
+         youtube = yt.get_authenticated_service()
+         # upload video to youtube
+         yt.initialize_upload(youtube, options)
+         print('[YOUTUBE] UPLOADED the video to youtube')
+         
+         # construct a document for the mongo db
+         doc = {
+            'title': f.filename,                   # TODO change this to a title
+            'author': author,
+            'location': location,
+            'timestamp': dt.timestamp(dt.now()),
+            'type': 'video',                       # resource type
+            'url': 'https://www.youtube.com',      # TODO how to get this url from the youtube api?
+            'size': os.stat(dst).st_size,          # filesize in bytes
+            }
+         print('[MONGO DB] CREATED a new document')
+         # insert the document into database
+         collection.insert_one(doc)
+         print('[MONGO DB] INSERTED the document to the collection')
+      except Exception:
          pass
-      options = Object()
-      options.file = dst
-      options.title = f.filename
-      options.description = 'Some video description.'
-      # TODO research the appropriate category
-      options.category = '22'   # see https://developers.google.com/youtube/v3/docs/videoCategories/list
-      options.keywords = ''
-      options.privacyStatus = 'unlisted'
-      # get the needed credentials from the client_secret.json
-      youtube = yt.get_authenticated_service()
-      # upload video to youtube
-      yt.initialize_upload(youtube, options)
-      print('[YOUTUBE] UPLOADED the video to youtube')
-      
-      # construct a document for the mongo db
-      doc = {
-         'title': f.filename,                   # TODO change this to a title
-         'author': author,
-         'location': location,
-         'timestamp': dt.timestamp(dt.now()),
-         'type': 'video',                       # resource type
-         'url': 'https://www.youtube.com',      # TODO how to get this url from the youtube api?
-         'size': os.stat(dst).st_size,          # filesize in bytes
-         }
-      print('[MONGO DB] CREATED a new document')
-      # insert the document into database
-      collection.insert_one(doc)
-      print('[MONGO DB] INSERTED the document to the collection')
 
       # delete resource from server
       os.remove(dst)
