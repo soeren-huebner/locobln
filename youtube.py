@@ -1,8 +1,6 @@
 # taken from https://github.com/youtube/api-samples/blob/master/python/upload_video.py
 
 import argparse
-import httplib
-import httplib2
 import os
 import random
 import time
@@ -13,24 +11,6 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
-
-
-# Explicitly tell the underlying HTTP transport library not to retry, since
-# we are handling retry logic ourselves.
-httplib2.RETRIES = 1
-
-# Maximum number of times to retry before giving up.
-MAX_RETRIES = 10
-
-# Always retry when these exceptions are raised.
-RETRIABLE_EXCEPTIONS = (httplib2.HttpLib2Error, IOError, httplib.NotConnected,
-  httplib.IncompleteRead, httplib.ImproperConnectionState,
-  httplib.CannotSendRequest, httplib.CannotSendHeader,
-  httplib.ResponseNotReady, httplib.BadStatusLine)
-
-# Always retry when an apiclient.errors.HttpError with one of these status
-# codes is raised.
-RETRIABLE_STATUS_CODES = [500, 502, 503, 504]
 
 # The CLIENT_SECRETS_FILE variable specifies the name of a file that contains
 # the OAuth 2.0 information for this application, including its client_id and
@@ -100,8 +80,6 @@ def initialize_upload(youtube, options):
 # failed upload.
 def resumable_upload(request):
   response = None
-  error = None
-  retry = 0
   while response is None:
     try:
       print('Uploading file...')
@@ -111,25 +89,7 @@ def resumable_upload(request):
           print('Video id "%s" was successfully uploaded.' % response['id'])
         else:
           exit('The upload failed with an unexpected response: %s' % response)
-    except HttpError as e:
-      if e.resp.status in RETRIABLE_STATUS_CODES:
-        error = 'A retriable HTTP error %d occurred:\n%s' % (e.resp.status,
-                                                             e.content)
-      else:
-        raise
-    except RETRIABLE_EXCEPTIONS as e:
-      error = 'A retriable error occurred: %s' % e
 
-    if error is not None:
-      print(error)
-      retry += 1
-      if retry > MAX_RETRIES:
-        exit('No longer attempting to retry.')
-
-      max_sleep = 2 ** retry
-      sleep_seconds = random.random() * max_sleep
-      print('Sleeping %f seconds and then retrying...' % sleep_seconds)
-      time.sleep(sleep_seconds)
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
@@ -148,7 +108,4 @@ if __name__ == '__main__':
 
   youtube = get_authenticated_service()
 
-  try:
-    initialize_upload(youtube, args)
-  except HttpError as e:
-    print('An HTTP error %d occurred:\n%s' % (e.resp.status, e.content))
+  initialize_upload(youtube, args)
