@@ -70,7 +70,7 @@ def index():
    # display the homepage
    return render_template('index.html')
 
-		
+
 if __name__ == '__main__':
    # connect to mongo db
    client = MongoClient('localhost', 27017, username='locobln_mongoroot', password='Start.Mongo!')
