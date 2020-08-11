@@ -86,7 +86,7 @@ if __name__ == '__main__':
    # TODO do this via config files or user input
    # set parameters for the upload
    author = 'author'
-   location = (52.436244, 13.345781)
+   location = [52.436244, 13.345781]
    # add a bit of randomness to the location
    location[0] += random.randrange(-100,100,1)/1000
    location[1] += random.randrange(-100,100,1)/1000
