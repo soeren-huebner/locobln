@@ -59,8 +59,8 @@ def upload_file():
          # insert the document into database
          collection.insert_one(doc)
          print('[MONGO DB] INSERTED the document to the collection')
-      except Exception:
-         pass
+      except Exception as e:
+         print(e)
 
       # delete resource from server
       os.remove(dst)
