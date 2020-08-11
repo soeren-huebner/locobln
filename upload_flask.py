@@ -42,6 +42,7 @@ def upload_file():
       youtube = yt.get_authenticated_service()
       # upload video to youtube
       yt.initialize_upload(youtube, options)
+      print('[YOUTUBE] UPLOADED the video to youtube')
       
       # construct a document for the mongo db
       doc = {
