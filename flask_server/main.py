@@ -52,10 +52,9 @@ def upload_file():
 
    return '[RETURN] file operation was successful'
 
-@app.route('/hello_world', methods = ['GET'])
-def hello_world():
-   if request.method == 'GET':
-      
+@app.route('/time')
+def get_current_time():
+   return {'time': dt.now()}       
 
 @app.route('/')
 def index():
