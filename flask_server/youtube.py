@@ -22,7 +22,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 #   https://developers.google.com/youtube/v3/guides/authentication
 # For more information about the client_secrets.json file format, see:
 #   https://developers.google.com/api-client-library/python/guide/aaa_client_secrets
-CLIENT_SECRETS_FILE = 'client_secret.json'
+CLIENT_SECRETS_FILE = 'yt_client_secret.json'
 
 # This OAuth 2.0 access scope allows an application to upload files to the
 # authenticated user's YouTube channel, but doesn't allow other types of access.

@@ -7,8 +7,6 @@ from pymongo import MongoClient
 from flask import Flask, render_template, request
 from werkzeug.utils import secure_filename
 
-import youtube as yt
-
 # initialise flask
 app = Flask(__name__)
 
@@ -17,7 +15,7 @@ def upload():
    # display the upload web page
    return render_template('upload.html')
 	
-@app.route('/uploader', methods = ['GET', 'POST'])
+@app.route('/uploader', methods = ['GET', 'POST', 'DELETE'])
 def upload_file():
    if request.method == 'POST':
       try:
@@ -27,23 +25,6 @@ def upload_file():
          dst = os.path.join(UPLOAD_FOLDER, secure_filename(f.filename))
          f.save(dst)
          print('[DIR] SAVED video {} to server'.format(f.filename))
-
-         # workaround to get the youtube script to work without parsing arguments
-         class Object(object):
-            pass
-         options = Object()
-         options.file = dst
-         options.title = f.filename
-         options.description = 'Some video description.'
-         # TODO research the appropriate category
-         options.category = '22'   # see https://developers.google.com/youtube/v3/docs/videoCategories/list
-         options.keywords = ''
-         options.privacyStatus = 'unlisted'
-         # get the needed credentials from the client_secret.json
-         youtube = yt.get_authenticated_service()
-         # upload video to youtube
-         yt.initialize_upload(youtube, options)
-         print('[YOUTUBE] UPLOADED the video to youtube')
          
          # construct a document for the mongo db
          doc = {
@@ -52,7 +33,7 @@ def upload_file():
             'location': location,
             'timestamp': dt.timestamp(dt.now()),
             'type': 'video',                       # resource type
-            'url': 'https://www.youtube.com',      # TODO how to get this url from the youtube api?
+            'url': dst,
             'size': os.stat(dst).st_size,          # filesize in bytes
             }
          print('[MONGO DB] CREATED a new document')
@@ -62,11 +43,19 @@ def upload_file():
       except Exception as e:
          print(e)
 
+   elif request.method == 'DELETE':
+      f = request.files['file']
+      dst = os.path.join(UPLOAD_FOLDER, secure_filename(f.filename))
       # delete resource from server
       os.remove(dst)
       print('[DIR] DELETED video {} from server'.format(f.filename))
+
+   return '[RETURN] file operation was successful'
+
+@app.route('/hello_world', methods = ['GET'])
+def hello_world():
+   if request.method == 'GET':
       
-      return 'file uploaded successfully'
 
 @app.route('/')
 def index():
