@@ -57,7 +57,7 @@ def upload_file():
 def get_markers():
    # read from mongoDB
    # df = pd.DataFrame(list(db.collection_name.find({}))
-   out = [
+   data = {"data": [
       {
          "title": "Marker 01",
          "description": "This is a marker.",
@@ -79,9 +79,9 @@ def get_markers():
          "longitude": 13.64,
          "key": "03"
       },
-   ]
+   ]}
 
-   return jsonify(out)
+   return data
 
 @app.route('/')
 def index():
