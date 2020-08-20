@@ -55,40 +55,33 @@ def upload_file():
 
 @app.route('/markers')
 def get_markers():
-      # read from mongoDB
+   # read from mongoDB
    # df = pd.DataFrame(list(db.collection_name.find({}))
-   df = pd.DataFrame(columns=["title", "description", "latitude", "longitude", "key"])
-   df = df.append(
+   out = [
       {
          "title": "Marker 01",
          "description": "This is a marker.",
          "latitude": 52.43,
          "longitude": 13.34,
          "key": "01"
-      }, ignore_index=True
-   )
-   df = df.append(
+      },
       {
          "title": "Marker 02",
          "description": "This is another marker.",
          "latitude": 52.58,
          "longitude": 13.47,
          "key": "02"
-      }, ignore_index=True
-   )
-   df = df.append(
+      },
        {
          "title": "Marker 03",
          "description": "This is also a marker.",
          "latitude": 52.46,
          "longitude": 13.64,
          "key": "03"
-      }, ignore_index=True
-   )
-   
-   out = df.to_json()
-   print(out)
-   return {'data': out}
+      },
+   ]
+
+   return out
 
 @app.route('/')
 def index():
