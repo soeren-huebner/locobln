@@ -5,8 +5,11 @@
  * @format
  * @flow strict-local
  */
+import 'react-native-gesture-handler';
+import React, { useEffect, useState } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 
-import React from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -14,7 +17,11 @@ import {
   View,
   Text,
   StatusBar,
+  Button,
+  Dimensions,
 } from 'react-native';
+
+import { Overlay } from 'react-native-elements';
 
 import {
   Header,
@@ -24,91 +31,103 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-const App: () => React$Node = () => {
+import Video from 'react-native-video';
+
+import MapView, { Marker } from 'react-native-maps';
+
+const Stack = createStackNavigator();
+
+const MyStack = () => {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen
+          name="Map"
+          component={MapScreen}
+          options={{ title: 'Map' }}
+        />
+        <Stack.Screen name="Video" component={VideoScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};
+
+
+const MapScreen = ({ navigation }) => {
+  const exampleMarkers = [
+    {
+      latitude: 52.43,
+      longitude: 13.34,
+      title: "EXAMPLE",
+      description: "example marker",
+      key: '00',
+    },
+  ];
+
+  const [markers, updateMarkers] = useState(exampleMarkers);
+
+  useEffect(() => {
+    fetch('https://locobln.uber.space/markers')
+      .then(res => res.json())
+      .then(data => { updateMarkers(data.data); });
+  }, []);
+
   return (
     <>
       <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          <Header />
-          {global.HermesInternal == null ? null : (
-            <View style={styles.engine}>
-              <Text style={styles.footer}>Engine: Hermes</Text>
-            </View>
-          )}
-          <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Step One</Text>
-              <Text style={styles.sectionDescription}>
-                Edit <Text style={styles.highlight}>App.js</Text> to change this
-                screen and then come back to see your edits.
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>See Your Changes</Text>
-              <Text style={styles.sectionDescription}>
-                <ReloadInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Debug</Text>
-              <Text style={styles.sectionDescription}>
-                <DebugInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-              <Text style={styles.sectionDescription}>
-                Read the docs to discover what to do next:
-              </Text>
-            </View>
-            <LearnMoreLinks />
-          </View>
-        </ScrollView>
-      </SafeAreaView>
+      <View style={styles.container}>
+        <MapView
+        style = {styles.mapcontainer}
+        initialRegion={{
+          latitude: 52.43,
+          longitude: 13.34,
+          latitudeDelta: 1.0,
+          longitudeDelta: 0.5,
+        }}>
+          
+          {markers.map(marker => (
+            <Marker
+              coordinate={{latitude: marker.latitude, longitude: marker.longitude,}}
+              pinColor={marker.color}
+              title={marker.title}
+              description={marker.description}
+              onCalloutPress={() =>
+                navigation.navigate('Video', { param: 'jupiters_auroras' })
+              }
+              key={marker.key}
+            />
+          ))}
+
+        </MapView>
+      </View>
     </>
   );
 };
 
+const VideoScreen = ( { route } ) => {
+  const { param } = route.params;
+
+  return (
+    <Video source={{uri: 'https://locobln.uber.space/video/'+ param +'.mp4' }} style={styles.backgroundVideo} />
+  );
+};
+
 const styles = StyleSheet.create({
-  scrollView: {
-    backgroundColor: Colors.lighter,
+  container: {
+    flex: 1,
   },
-  engine: {
+  mapcontainer: {
+    flex: 1,
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height,
+  },
+  backgroundVideo: {
     position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
     right: 0,
-  },
-  body: {
-    backgroundColor: Colors.white,
-  },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
   },
 });
 
-export default App;
+export default MyStack;

@@ -75,7 +75,6 @@ def get_video(video_name):
    #dst = os.path.join(UPLOAD_FOLDER, secure_filename('jupiters_auroras.mp4'))
    #f = open(dst)
    #return Response(f, direct_passthrough=True)
-
    try:
       return send_file('videos/'+video_name, as_attachment=True)
    except FileNotFoundError:
