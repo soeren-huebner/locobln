@@ -76,6 +76,12 @@ def get_video(id):
    f = open(dst)
    return Response(f, direct_passthrough=True)
 
+@app.route('/video')
+def get_default_video():
+   dst = os.path.join(UPLOAD_FOLDER, secure_filename('jupiters_auroras.mp4'))
+   f = open(dst)
+   return Response(f, direct_passthrough=True)
+
 @app.route('/')
 def index():
    # display the homepage
