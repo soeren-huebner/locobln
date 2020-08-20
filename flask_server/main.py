@@ -4,7 +4,7 @@ import random
 
 from pymongo import MongoClient
 
-from flask import Flask, render_template, request, jsonify, redirect, abort, send_from_directory
+from flask import Flask, render_template, request, jsonify, redirect, abort, send_file
 from werkzeug.utils import secure_filename
 from werkzeug.wrappers import Response
 
@@ -77,7 +77,7 @@ def get_video(video_name):
    #return Response(f, direct_passthrough=True)
 
    try:
-      return send_from_directory(app.config['UPLOAD_FOLDER'], filename=video_name, as_attachment=True)
+      return send_file('videos/'+video_name, as_attachment=True)
    except FileNotFoundError:
       abort(404)
 
