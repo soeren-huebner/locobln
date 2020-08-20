@@ -2,7 +2,6 @@ from datetime import datetime as dt
 import os
 import random
 
-import pandas as pd
 from pymongo import MongoClient
 
 from flask import Flask, render_template, request, jsonify
@@ -56,32 +55,18 @@ def upload_file():
 @app.route('/markers')
 def get_markers():
    # read from mongoDB
-   # df = pd.DataFrame(list(db.collection_name.find({}))
-   data = {"data": [
-      {
-         "title": "Marker 01",
-         "description": "This is a marker.",
-         "latitude": 52.43,
-         "longitude": 13.34,
-         "key": "01"
-      },
-      {
-         "title": "Marker 02",
-         "description": "This is another marker.",
-         "latitude": 52.58,
-         "longitude": 13.47,
-         "key": "02"
-      },
-       {
-         "title": "Marker 03",
-         "description": "This is also a marker.",
-         "latitude": 52.46,
-         "longitude": 13.64,
-         "key": "03"
-      },
-   ]}
-
-   return data
+   cursor = db.markers
+   output = []
+   for c in cursor.find():
+      output.append(
+         {
+            'title': c['title'], 
+            'description' : c['description'],
+            'latitude' : c['latitude'],
+            'longitude' : c['longitude'],
+            'key' : c['_id'] 
+         })
+   return jsonify({'data' : output})
 
 @app.route('/')
 def index():
