@@ -4,7 +4,7 @@ import random
 
 from pymongo import MongoClient
 
-from flask import Flask, render_template, request, jsonify, redirect
+from flask import Flask, render_template, request, jsonify, redirect, abort, send_from_directory
 from werkzeug.utils import secure_filename
 from werkzeug.wrappers import Response
 
@@ -69,16 +69,17 @@ def get_markers():
          })
    return {'data' : output}
 
-@app.route('/video/<id>')
-def get_video(id):
+@app.route('/video/<video_name>')
+def get_video(video_name):
    # TODO get video dst by id
-   dst = os.path.join(UPLOAD_FOLDER, secure_filename('jupiters_auroras.mp4'))
-   f = open(dst)
-   return Response(f, direct_passthrough=True)
+   #dst = os.path.join(UPLOAD_FOLDER, secure_filename('jupiters_auroras.mp4'))
+   #f = open(dst)
+   #return Response(f, direct_passthrough=True)
 
-@app.route('/video')
-def get_default_video():
-   return redirect('/videos/jupiters_auroras.mp4')
+   try:
+      return send_from_directory(app.config['UPLOAD_FOLDER'], filename=video_name, as_attachment=True)
+   except FileNotFoundError:
+      abort(404)
 
 @app.route('/')
 def index():
