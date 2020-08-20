@@ -64,9 +64,9 @@ def get_markers():
             'description' : c['description'],
             'latitude' : c['latitude'],
             'longitude' : c['longitude'],
-            'key' : c['_id'] 
+            'key' : str(c['_id']),
          })
-   return jsonify({'data' : output})
+   return {'data' : output}
 
 @app.route('/')
 def index():
