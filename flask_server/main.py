@@ -81,7 +81,7 @@ def get_markers():
       },
    ]
 
-   return out
+   return jsonify(out)
 
 @app.route('/')
 def index():
