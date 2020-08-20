@@ -66,6 +66,7 @@ def get_markers():
             'latitude' : c['latitude'],
             'longitude' : c['longitude'],
             'key' : str(c['_id']),
+            'video' : c['video'],
          })
    return {'data' : output}
 
