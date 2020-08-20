@@ -94,7 +94,7 @@ def get_markers():
 
    out = df.to_json(orient='records')
    print(out)
-   return out
+   return {'data': out}
 
 @app.route('/')
 def index():
