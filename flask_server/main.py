@@ -52,9 +52,38 @@ def upload_file():
 
    return '[RETURN] file operation was successful'
 
-@app.route('/time')
-def get_current_time():
-   return {'time': dt.now()}       
+@app.route('/markers')
+def get_markers():
+   markers = [
+      {
+         "title": "Marker 01",
+         "description": "This is a marker.",
+         "coordinate": {
+            "latitude": 52.43,
+            "longitude": 13.34,
+         },
+         "key": "01"
+      },
+      {
+         "title": "Marker 02",
+         "description": "This is another marker.",
+         "coordinate": {
+            "latitude": 52.58,
+            "longitude": 13.47,
+         },
+         "key": "02"
+      },
+      {
+         "title": "Marker 03",
+         "description": "This is also a marker.",
+         "coordinate": {
+            "latitude": 52.46,
+            "longitude": 13.64,
+         },
+         "key": "03"
+      },
+   ]
+   return {markers}       
 
 @app.route('/')
 def index():
