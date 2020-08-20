@@ -57,15 +57,13 @@ def upload_file():
 def get_markers():
       # read from mongoDB
    # df = pd.DataFrame(list(db.collection_name.find({}))
-   df = pd.DataFrame(columns=["title", "description", "coordinate"])
+   df = pd.DataFrame(columns=["title", "description", "latitude", "longitude", "key"])
    df.append(
       {
          "title": "Marker 01",
          "description": "This is a marker.",
-         "coordinate": {
-            "latitude": 52.43,
-            "longitude": 13.34,
-         },
+         "latitude": 52.43,
+         "longitude": 13.34,
          "key": "01"
       }, ignore_index=True
    )
@@ -73,10 +71,8 @@ def get_markers():
       {
          "title": "Marker 02",
          "description": "This is another marker.",
-         "coordinate": {
-            "latitude": 52.58,
-            "longitude": 13.47,
-         },
+         "latitude": 52.58,
+         "longitude": 13.47,
          "key": "02"
       }, ignore_index=True
    )
@@ -84,14 +80,12 @@ def get_markers():
        {
          "title": "Marker 03",
          "description": "This is also a marker.",
-         "coordinate": {
-            "latitude": 52.46,
-            "longitude": 13.64,
-         },
+         "latitude": 52.46,
+         "longitude": 13.64,
          "key": "03"
       }, ignore_index=True
    )
-
+   
    out = df.to_json()
    print(out)
    return {'data': out}
