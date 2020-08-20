@@ -4,7 +4,7 @@ import random
 
 from pymongo import MongoClient
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect
 from werkzeug.utils import secure_filename
 from werkzeug.wrappers import Response
 
@@ -78,9 +78,7 @@ def get_video(id):
 
 @app.route('/video')
 def get_default_video():
-   dst = os.path.join(UPLOAD_FOLDER, secure_filename('jupiters_auroras.mp4'))
-   f = open(dst)
-   return Response(f, direct_passthrough=True)
+   return redirect('/videos/jupiters_auroras.mp4')
 
 @app.route('/')
 def index():
