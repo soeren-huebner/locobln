@@ -58,7 +58,7 @@ def get_markers():
       # read from mongoDB
    # df = pd.DataFrame(list(db.collection_name.find({}))
    df = pd.DataFrame(columns=["title", "description", "latitude", "longitude", "key"])
-   df.append(
+   df = df.append(
       {
          "title": "Marker 01",
          "description": "This is a marker.",
@@ -67,7 +67,7 @@ def get_markers():
          "key": "01"
       }, ignore_index=True
    )
-   df.append(
+   df = df.append(
       {
          "title": "Marker 02",
          "description": "This is another marker.",
@@ -76,7 +76,7 @@ def get_markers():
          "key": "02"
       }, ignore_index=True
    )
-   df.append(
+   df = df.append(
        {
          "title": "Marker 03",
          "description": "This is also a marker.",
