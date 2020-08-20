@@ -4,7 +4,7 @@ import random
 
 from pymongo import MongoClient
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 
 # initialise flask
@@ -83,7 +83,9 @@ def get_markers():
          "key": "03"
       },
    ]
-   return {markers}       
+   out = jsonify(markers)
+   print(out)
+   return out
 
 @app.route('/')
 def index():
