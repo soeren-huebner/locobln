@@ -6,6 +6,7 @@ from pymongo import MongoClient
 
 from flask import Flask, render_template, request, jsonify
 from werkzeug.utils import secure_filename
+from werkzeug.wrappers import Response
 
 # initialise flask
 app = Flask(__name__)
@@ -67,6 +68,13 @@ def get_markers():
             'key' : str(c['_id']),
          })
    return {'data' : output}
+
+@app.route('/video/<id>')
+def get_video(id):
+   # TODO get video dst by id
+   dst = os.path.join(UPLOAD_FOLDER, secure_filename('jupiters_auroras.mp4'))
+   f = open(dst)
+   return Response(f, direct_passthrough=True)
 
 @app.route('/')
 def index():
