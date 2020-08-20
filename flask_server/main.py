@@ -92,7 +92,7 @@ def get_markers():
       }, ignore_index=True
    )
 
-   out = df.to_json(orient='records')
+   out = df.to_json()
    print(out)
    return {'data': out}
 
