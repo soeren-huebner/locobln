@@ -67,7 +67,8 @@ def get_markers():
             "longitude": 13.34,
          },
          "key": "01"
-      })
+      }, ignore_index=True
+   )
    df.append(
       {
          "title": "Marker 02",
@@ -77,7 +78,8 @@ def get_markers():
             "longitude": 13.47,
          },
          "key": "02"
-      })
+      }, ignore_index=True
+   )
    df.append(
        {
          "title": "Marker 03",
@@ -87,7 +89,7 @@ def get_markers():
             "longitude": 13.64,
          },
          "key": "03"
-      }
+      }, ignore_index=True
    )
 
    out = df.to_json(orient='records')
