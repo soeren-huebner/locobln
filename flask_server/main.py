@@ -26,7 +26,9 @@ def upload_resource():
          # add a timestamp to the filename to avoid collisions
          # TODO make sure that this works even if the filename contains seperators
          timestamp = dt.timestamp(dt.now())
-         dst = os.path.join(RESOURCE_FOLDER, secure_filename(timestamp + '_' + f.filename))
+         timestamp_str = '%.0f' % timestamp
+         new_filename = timestamp_str + '_' + f.filename
+         dst = os.path.join(RESOURCE_FOLDER, secure_filename(new_filename))
          f.save(dst)
          # TODO leave out attribute if the html field was empty
          doc = {
