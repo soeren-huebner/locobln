@@ -60,3 +60,6 @@ buck-out/
 
 # API keys
 .env
+
+# screenshots
+screenshots/

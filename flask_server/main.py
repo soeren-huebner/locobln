@@ -25,7 +25,7 @@ def upload_resource():
          # TODO leave out attribute if the html field was empty
          f = request.files['file']
          fs.put(f,
-            filename=dt.timestamp(dt.now())+'_'+f.filename,
+            filename=f.filename,
             title=request.form['title'],
             author=request.form['author'],
             description=request.form['description'],
