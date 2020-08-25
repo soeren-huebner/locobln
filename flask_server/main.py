@@ -35,8 +35,8 @@ def upload_resource():
             'title': request.form['title'],
             'author': request.form['author'],
             'description': request.form['description'],
-            'latitude': request.form['latitude'],
-            'longitude': request.form['longitude'],
+            'latitude': float(request.form['latitude']),
+            'longitude': float(request.form['longitude']),
             'timestamp': timestamp,
             'path': dst,
             'type': request.form['res_type'],           # resource type
