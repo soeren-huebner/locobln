@@ -49,17 +49,22 @@ def upload_resource():
 @app.route('/markers')
 def get_markers():
    # read from mongoDB
-   cursor = db.markers
+   cursor = db.resource_collection
    output = []
    for c in cursor.find():
       output.append(
          {
             'title': c['title'], 
+            'author': c['author'],
             'description' : c['description'],
             'latitude' : c['latitude'],
             'longitude' : c['longitude'],
+            'timestamp': c['timestamp'],
+            'path': c['path'],
+            'type': c['type'],
+            'size': c['size'],
+
             'key' : str(c['_id']),
-            'video' : c['video'],
          })
    return {'data' : output}
 
