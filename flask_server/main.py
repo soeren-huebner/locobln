@@ -45,16 +45,15 @@ def get_markers():
    cursor = db.markers
    output = []
    for c in cursor.find():
-      #output.append(
-      #   {
-      #      'title': c['title'], 
-      #      'description' : c['description'],
-      #      'latitude' : c['latitude'],
-      #      'longitude' : c['longitude'],
-      #      'key' : str(c['_id']),
-      #      'video' : c['video'],
-      #   })
-      output.append(c)
+      output.append(
+         {
+            'title': c['title'], 
+            'description' : c['description'],
+            'latitude' : c['latitude'],
+            'longitude' : c['longitude'],
+            'key' : str(c['_id']),
+            'video' : c['video'],
+         })
    return {'data' : output}
 
 @app.route('/resources/<resource_name>')
