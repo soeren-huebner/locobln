@@ -25,14 +25,13 @@ def upload_resource():
          # TODO leave out attribute if the html field was empty
          f = request.files['file']
          fs.put(f,
+            filename=dt.timestamp(dt.now())+'_'+f.filename,
             title=request.form['title'],
             author=request.form['author'],
             description=request.form['description'],
             latitude=request.form['latitude'],
             longitude=request.form['longitude'],
-            timestamp=dt.timestamp(dt.now()),
             type=request.form['res_type'],            # resource type
-            #size=os.stat(dst).st_size,                # TODO filesize in bytes
          )
          print('INSERTED a document to the collection')
       except Exception as e:
