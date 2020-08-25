@@ -21,19 +21,26 @@ def upload():
 def upload_resource():
    if request.method == 'POST':
       try:
-         # save the uploaded file to the server via gridfs & read out necessary attributes
-         # TODO leave out attribute if the html field was empty
+         # save the uploaded file to the server
          f = request.files['file']
-         fs.put(f,
-            filename=f.filename,
-            title=request.form['title'],
-            author=request.form['author'],
-            description=request.form['description'],
-            latitude=request.form['latitude'],
-            longitude=request.form['longitude'],
-            type=request.form['res_type'],            # resource type
-         )
-         print('INSERTED a document to the collection')
+         # add a timestamp to the filename to avoid collisions
+         # TODO make sure that this works even if the filename contains seperators
+         timestamp = dt.timestamp(dt.now())
+         dst = os.path.join(RESOURCE_FOLDER, secure_filename(timestamp + '_' + f.filename))
+         f.save(dst)
+         # TODO leave out attribute if the html field was empty
+         doc = {
+            'title': request.form['title'],
+            'author': request.form['author'],
+            'description': request.form['description'],
+            'latitude': request.form['latitude'],
+            'longitude': request.form['longitude'],
+            'timestamp': timestamp,
+            'path': dst,
+            'type': request.form['res_type'],           # resource type
+            'size': os.stat(dst).st_size,               # filesize in bytes
+            }
+         db.resource_collection.insert_one(doc)
       except Exception as e:
          print(e)
 
