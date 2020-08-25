@@ -1,8 +1,36 @@
+<!doctype html>
 <html>
+   <head>
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+   </head>
+   
    <body>
-      <form action="https://locobln.uber.space/uploader" method="POST" 
-         enctype="multipart/form-data">
-         <input type="file" name="file" />
+      <form action="https://locobln.uber.space/uploader" method="POST" enctype="multipart/form-data">
+         
+         <label for="title">Title:</label><br>
+         <input type="text" name="title" value="Title"><br>
+
+         <label for="description">Description:</label><br>
+         <textarea rows="4" cols="50" name="description">
+            Enter a description...
+         </textarea><br>
+
+         <label for="latitude">Latitude:</label>
+         <input type="number" step=0.00001 name="latitude" value=52.43624>
+         <label for="longitude">Longitude:</label>
+         <input type="number" step=0.00001 name="longitude" value=13.34578><br>
+
+         <label for="res_type">Choose a file type:</label>
+         <select name="res_type">
+           <option value="video">Video</option>
+           <option value="text">Text</option>
+           <option value="image">Image</option>
+           <option value="other">Other</option>
+         </select> 
+       
+         <label for="file">File:</label><br>
+         <input type="file" name="file" /> <br><br>
+         
          <input type="submit" value="Submit" />
       </form>   
    </body>

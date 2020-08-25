@@ -17,25 +17,27 @@ def upload():
    return render_template('upload.html')
 	
 @app.route('/uploader', methods = ['GET', 'POST', 'DELETE'])
-def upload_file():
+def upload_resource():
    if request.method == 'POST':
       try:
-         # TODO generalise to different types of documents
+         # TODO save file with gridfs
          # save the uploaded file to the server
          f = request.files['file']
-         dst = os.path.join(UPLOAD_FOLDER, secure_filename(f.filename))
+         dst = os.path.join(RESOURCE_FOLDER, secure_filename(f.filename))
          f.save(dst)
-         print('[DIR] SAVED video {} to server'.format(f.filename))
+         print('[DIR] SAVED resource {} to server'.format(f.filename))
          
          # construct a document for the mongo db
+         # TODO leave out attribute if the html field was empty
          doc = {
-            'title': f.filename,                   # TODO change this to a title
-            'author': author,
-            'location': location,
+            'title': request.form['title'],
+            'author': request.form['author'],
+            'description': request.form['description'],
+            'latitude': request.form['latitude'],
+            'longitude': request.form['longitude'],
             'timestamp': dt.timestamp(dt.now()),
-            'type': 'video',                       # resource type
-            'url': dst,
-            'size': os.stat(dst).st_size,          # filesize in bytes
+            'type': request.form['res_type'],           # resource type
+            'size': os.stat(dst).st_size,                # filesize in bytes
             }
          print('[MONGO DB] CREATED a new document')
          # insert the document into database
@@ -46,7 +48,7 @@ def upload_file():
 
    elif request.method == 'DELETE':
       f = request.files['file']
-      dst = os.path.join(UPLOAD_FOLDER, secure_filename(f.filename))
+      dst = os.path.join(RESOURCE_FOLDER, secure_filename(f.filename))
       # delete resource from server
       os.remove(dst)
       print('[DIR] DELETED video {} from server'.format(f.filename))
@@ -59,25 +61,22 @@ def get_markers():
    cursor = db.markers
    output = []
    for c in cursor.find():
-      output.append(
-         {
-            'title': c['title'], 
-            'description' : c['description'],
-            'latitude' : c['latitude'],
-            'longitude' : c['longitude'],
-            'key' : str(c['_id']),
-            'video' : c['video'],
-         })
+      #output.append(
+      #   {
+      #      'title': c['title'], 
+      #      'description' : c['description'],
+      #      'latitude' : c['latitude'],
+      #      'longitude' : c['longitude'],
+      #      'key' : str(c['_id']),
+      #      'video' : c['video'],
+      #   })
+      output.append(c)
    return {'data' : output}
 
-@app.route('/video/<video_name>')
-def get_video(video_name):
-   # TODO get video dst by id
-   #dst = os.path.join(UPLOAD_FOLDER, secure_filename('jupiters_auroras.mp4'))
-   #f = open(dst)
-   #return Response(f, direct_passthrough=True)
+@app.route('/resources/<resource_name>')
+def get_resource(resource_name):
    try:
-      return send_file('videos/'+video_name, as_attachment=True)
+      return send_file(RESOURCE_FOLDER+'/'+resource_name, as_attachment=True)
    except FileNotFoundError:
       abort(404)
 
@@ -94,18 +93,10 @@ if __name__ == '__main__':
    collection = db['resource_collection']
 
    # setup the folder where uploaded videos are going to be stored
-   UPLOAD_FOLDER = 'videos'
-   app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+   RESOURCE_FOLDER = 'resources'
+   app.config['RESOURCE_FOLDER'] = RESOURCE_FOLDER
    # constrain max size of uploads to 50MB 
    app.config['MAX_CONTENT_LENGTH'] = 50 * 10**6
-
-   # TODO do this via config files or user input
-   # set parameters for the upload
-   author = 'author'
-   location = [52.436244, 13.345781]
-   # add a bit of randomness to the location
-   location[0] += random.randrange(-100,100,1)/1000
-   location[1] += random.randrange(-100,100,1)/1000
 
    # start flask
    app.run(host='0.0.0.0', debug=True)
