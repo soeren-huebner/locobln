@@ -55,8 +55,6 @@ def get_markers():
       #      'video' : c['video'],
       #   })
       output.append(c)
-   print(db.markers)
-   print(output)
    return {'data' : output}
 
 @app.route('/resources/<resource_name>')
