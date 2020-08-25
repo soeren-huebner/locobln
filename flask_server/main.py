@@ -3,6 +3,7 @@ import os
 import random
 
 from pymongo import MongoClient
+import gridfs
 
 from flask import Flask, render_template, request, jsonify, redirect, abort, send_file
 from werkzeug.utils import secure_filename
@@ -16,44 +17,28 @@ def upload():
    # display the upload web page
    return render_template('upload.html')
 	
-@app.route('/uploader', methods = ['GET', 'POST', 'DELETE'])
+@app.route('/uploader', methods = ['POST', 'DELETE'])
 def upload_resource():
    if request.method == 'POST':
       try:
-         # TODO save file with gridfs
-         # save the uploaded file to the server
-         f = request.files['file']
-         dst = os.path.join(RESOURCE_FOLDER, secure_filename(f.filename))
-         f.save(dst)
-         print('[DIR] SAVED resource {} to server'.format(f.filename))
-         
-         # construct a document for the mongo db
+         # save the uploaded file to the server via gridfs & read out necessary attributes
          # TODO leave out attribute if the html field was empty
-         doc = {
-            'title': request.form['title'],
-            'author': request.form['author'],
-            'description': request.form['description'],
-            'latitude': request.form['latitude'],
-            'longitude': request.form['longitude'],
-            'timestamp': dt.timestamp(dt.now()),
-            'type': request.form['res_type'],           # resource type
-            'size': os.stat(dst).st_size,                # filesize in bytes
-            }
-         print('[MONGO DB] CREATED a new document')
-         # insert the document into database
-         collection.insert_one(doc)
-         print('[MONGO DB] INSERTED the document to the collection')
+         f = request.files['file']
+         fs.put(f,
+            title=request.form['title'],
+            author=request.form['author'],
+            description=request.form['description'],
+            latitude=request.form['latitude'],
+            longitude=request.form['longitude'],
+            timestamp=dt.timestamp(dt.now()),
+            type=request.form['res_type'],            # resource type
+            #size=os.stat(dst).st_size,                # TODO filesize in bytes
+         )
+         print('INSERTED a document to the collection')
       except Exception as e:
          print(e)
 
-   elif request.method == 'DELETE':
-      f = request.files['file']
-      dst = os.path.join(RESOURCE_FOLDER, secure_filename(f.filename))
-      # delete resource from server
-      os.remove(dst)
-      print('[DIR] DELETED video {} from server'.format(f.filename))
-
-   return '[RETURN] file operation was successful'
+   return 'Finished the file upload.'
 
 @app.route('/markers')
 def get_markers():
@@ -71,6 +56,8 @@ def get_markers():
       #      'video' : c['video'],
       #   })
       output.append(c)
+   print(db.markers)
+   print(output)
    return {'data' : output}
 
 @app.route('/resources/<resource_name>')
@@ -89,8 +76,8 @@ def index():
 if __name__ == '__main__':
    # connect to mongo db
    client = MongoClient('localhost', 27017, username='locobln_mongoroot', password='Start.Mongo!')
-   db = client['resource_database']
-   collection = db['resource_collection']
+   db = client.resource_database
+   fs = gridfs.GridFS(db)
 
    # setup the folder where uploaded videos are going to be stored
    RESOURCE_FOLDER = 'resources'
