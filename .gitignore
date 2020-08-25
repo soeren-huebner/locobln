@@ -1,3 +1,5 @@
 LOCO
 __pycache__
 flask_server/resources/*
+# screenshots
+screenshots/
