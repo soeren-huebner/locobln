@@ -53,13 +53,10 @@ def get_markers():
    start_date = request.args.get('start_date')
    end_date = request.args.get('end_date')
    
-   print(start_date)
-   print(end_date)
-
    query = {
       "timestamp": {
-         "$gte": start_date,
-         "$lte": end_date
+         "$gte": float(start_date),
+         "$lte": float(end_date)
       }
    }
 
