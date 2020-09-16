@@ -48,32 +48,20 @@ def upload_resource():
 
    return 'Finished the file upload.'
 
-@app.route('/markers', methods=['GET'])
+@app.route('/markers', methods=['GET', 'POST'])
 def get_markers():
    start_date = request.args.get('start_date')
    end_date = request.args.get('end_date')
+   
+   print(start_date)
+   print(end_date)
 
-   if start_date and end_date:
-      query = {
-         "timestamp": {
-            "$gte": start_date,
-            "$lte": end_date
-         }
+   query = {
+      "timestamp": {
+         "$gte": start_date,
+         "$lte": end_date
       }
-   elif start_date and not end_date:
-      query = {
-         "timestamp": {
-            "$gte": start_date
-         }
-      }
-   elif not start_date and end_date:
-      query = {
-         "timestamp": {
-            "$lte": end_date
-         }
-      }
-   else:
-      query = {}
+   }
 
    # read from mongoDB
    cursor = db.resource_collection
