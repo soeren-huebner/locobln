@@ -48,25 +48,49 @@ def upload_resource():
 
    return 'Finished the file upload.'
 
-@app.route('/markers')
+@app.route('/markers', methods=['GET'])
 def get_markers():
+   start_date = request.args.get('start_date')
+   end_date = request.args.get('end_date')
+
+   if start_date and end_date:
+      query = {
+         "timestamp": {
+            "$gte": start_date,
+            "$lte": end_date
+         }
+      }
+   elif start_date and not end_date:
+      query = {
+         "timestamp": {
+            "$gte": start_date
+         }
+      }
+   elif not start_date and end_date:
+      query = {
+         "timestamp": {
+            "$lte": end_date
+         }
+      }
+   else:
+      query = {}
+
    # read from mongoDB
    cursor = db.resource_collection
    output = []
-   for c in cursor.find():
+   for c in cursor.find(query):
       output.append(
          {
-            'title': c['title'], 
-            'author': c['author'],
-            'description' : c['description'],
-            'latitude' : c['latitude'],
-            'longitude' : c['longitude'],
-            'timestamp': c['timestamp'],
-            'path': c['path'],
-            'type': c['type'],
-            'size': c['size'],
-
-            'key' : str(c['_id']),
+            'title'        :  c['title'], 
+            'author'       :  c['author'],
+            'description'  :  c['description'],
+            'latitude'     :  c['latitude'],
+            'longitude'    :  c['longitude'],
+            'timestamp'    :  c['timestamp'],
+            'path'         :  c['path'],
+            'type'         :  c['type'],
+            'size'         :  c['size'],
+            'key'          :  str(c['_id']),
          })
    return {'data' : output}
 
