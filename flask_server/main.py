@@ -52,12 +52,14 @@ def upload_resource():
 def get_markers():
    start_date = request.args.get('start_date')
    end_date = request.args.get('end_date')
+   tags = request.args.get('tags')
    
    query = {
       "timestamp": {
          "$gte": float(start_date),
          "$lte": float(end_date)
-      }
+      },
+      "tags": str(tags)
    }
 
    # read from mongoDB
@@ -76,6 +78,7 @@ def get_markers():
             'type'         :  c['type'],
             'size'         :  c['size'],
             'key'          :  str(c['_id']),
+            'tags'         :  c['tags'],
          })
    return {'data' : output}
 
