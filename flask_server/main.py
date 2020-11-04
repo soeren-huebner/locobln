@@ -6,11 +6,55 @@ from pymongo import MongoClient
 import gridfs
 
 from flask import Flask, render_template, request, jsonify, redirect, abort, send_file
+from flask.ext.bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
 from werkzeug.wrappers import Response
 
-# initialise flask
+# initialise flask and bcrypt
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
+
+@app.route('/signup')
+def signup():
+   # display the sign up web page
+   return render_template('signup.html')
+
+@app.route('/adduser', methods = ['POST'])
+def add_user():
+   if request.method == 'POST':
+      try:
+         # make sure that the user name is unique
+         new_username = request.form['username']
+         if new_username in db.users.distinct('username'):
+            # TODO proper error handling
+            return f"Could'nt add a new user. The user name {new_username} is already taken."
+         
+         # make sure that the two given passwords match
+         if not request.form['password_first'] == request.form['password_second']:
+            # TODO proper error handling
+            return 'The two given passwords do not match.'
+
+         u = {
+            'username': new_username,
+            'password_hash': bcrypt.generate_password_hash(request.form['password_first']),
+            'alignment': request.form['alignment'],
+            'signup_date': dt.timestamp(dt.now()),
+            }
+         db.users.insert_one(u)
+            
+      except Exception as e:
+         print(e)
+
+   return f'Added user {new_username} to user database.'
+
+@app.route('/check_password')
+def check_password():
+   # TODO do this properly without disregarding POST and GET definitions
+   username = request.args.get('username')
+   # TODO the given password shouldn't be send unencrypted
+   given_password = request.args.get('password')
+   password_hash = db.user.find_one({'username': username})['password_hash']
+   return {'data' : bcrypt.check_password_hash(password_hash, given_password)}
 
 @app.route('/upload')
 def upload():

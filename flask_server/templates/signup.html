@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+   <head>
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+   </head>
+
+   <body>
+      <form action="https://locobln.uber.space/adduser" method="POST" enctype="multipart/form-data">
+         
+         <label for="username">User Name:</label>
+         <input type="text" name="username" value="username"><br><br>
+
+         <label for="password">Password (type it twice):</label>
+         <input type="password" name="password_first"><br>
+         <input type="password" name="password_second"><br><br>
+
+         <label for="alignment">Choose an alignment:</label>
+         <select name="res_type">
+           <option value="leftwing">leftwing</option>
+           <option value="lawful evil">lawful evil</option>
+           <option value="lobster">lobster</option>
+           <option value="sniff">sniff</option>
+         </select> <br><br>
+         
+         <input type="submit" value="Sign Up!" />
+      </form>   
+   </body>
+</html>
