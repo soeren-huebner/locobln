@@ -6,7 +6,7 @@ from pymongo import MongoClient
 import gridfs
 
 from flask import Flask, render_template, request, jsonify, redirect, abort, send_file
-from flask_bcrypt import Bcrypt
+from flask.ext.bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
 from werkzeug.wrappers import Response
 
