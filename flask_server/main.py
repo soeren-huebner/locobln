@@ -19,31 +19,30 @@ def signup():
    # display the sign up web page
    return render_template('signup.html')
 
-@app.route('/adduser', methods = ['POST'])
+@app.route('/adduser')
 def add_user():
-   if request.method == 'POST':
-      try:
-         # make sure that the user name is unique
-         new_username = request.form['username']
-         if new_username in db.users.distinct('username'):
-            # TODO proper error handling
-            return f"Could'nt add a new user. The user name {new_username} is already taken."
-         
-         # make sure that the two given passwords match
-         if not request.form['password_first'] == request.form['password_second']:
-            # TODO proper error handling
-            return 'The two given passwords do not match.'
+   try:
+      # make sure that the user name is unique
+      new_username = request.form['username']
+      if new_username in db.users.distinct('username'):
+         # TODO proper error handling
+         return f"Could'nt add a new user. The user name {new_username} is already taken."
+      
+      # make sure that the two given passwords match
+      if not request.form['password_first'] == request.form['password_second']:
+         # TODO proper error handling
+         return 'The two given passwords do not match.'
 
-         u = {
-            'username': new_username,
-            'password_hash': bcrypt.generate_password_hash(request.form['password_first']),
-            'alignment': request.form['alignment'],
-            'signup_date': dt.timestamp(dt.now()),
-            }
-         db.users.insert_one(u)
-            
-      except Exception as e:
-         print(e)
+      u = {
+         'username': new_username,
+         'password_hash': bcrypt.generate_password_hash(request.form['password_first']),
+         'alignment': request.form['alignment'],
+         'signup_date': dt.timestamp(dt.now()),
+         }
+      db.users.insert_one(u)
+         
+   except Exception as e:
+      print(e)
 
    return f'Added user {new_username} to user database.'
 
