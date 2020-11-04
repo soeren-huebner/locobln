@@ -1,4 +1,2 @@
-title,description,latitude,longitude,video
-Marker 1,this is a marker,52.43,13.34,mandelbrot_zoom.mp4
-Marker 2,this is another marker,52.58,13.47,jupiters_auroras.mp4
-Marker 3,this is also a marker,52.46,13.64,jupiters_auroras.mp4
+title,author,description,latitude,longitude,timestamp,path,type,size,tags
+text document,Shakespeare,this is not a video,52.95,13.5,1602001859,resources/text.txt,text,446,['important','42']

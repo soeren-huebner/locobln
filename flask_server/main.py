@@ -48,19 +48,32 @@ def upload_resource():
 
    return 'Finished the file upload.'
 
+@app.route('/tags', methods=['GET'])
+def get_all_tags():
+   return {'data' : db.resource_collection.distinct('tags')}
+
 @app.route('/markers', methods=['GET', 'POST'])
 def get_markers():
    start_date = request.args.get('start_date')
    end_date = request.args.get('end_date')
    tags = request.args.get('tags')
-   
-   query = {
-      "timestamp": {
-         "$gte": float(start_date),
-         "$lte": float(end_date)
-      },
-      "tags": str(tags)
-   }
+
+   if tags:   
+      query = {
+         "timestamp": {
+            "$gte": float(start_date),
+            "$lte": float(end_date)
+         },
+         "tags": str(tags)
+      }
+   else:
+         query = {
+         "timestamp": {
+            "$gte": float(start_date),
+            "$lte": float(end_date)
+         }
+      }
+
 
    # read from mongoDB
    cursor = db.resource_collection
