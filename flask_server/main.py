@@ -6,7 +6,7 @@ from pymongo import MongoClient
 import gridfs
 
 from flask import Flask, render_template, request, jsonify, redirect, abort, send_file
-from flask_bcrypt import Bcrypt
+from flask.ext.bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
 from werkzeug.wrappers import Response
 
@@ -19,32 +19,35 @@ def signup():
    # display the sign up web page
    return render_template('signup.html')
 
-@app.route('/adduser')
+@app.route('/adduser', methods = ['POST'])
 def add_user():
-   try:
-      # make sure that the user name is unique
-      new_username = request.form['username']
-      if new_username in db.users.distinct('username'):
-         # TODO proper error handling
-         return f"Could'nt add a new user. The user name {new_username} is already taken."
-      
-      # make sure that the two given passwords match
-      if not request.form['password_first'] == request.form['password_second']:
-         # TODO proper error handling
-         return 'The two given passwords do not match.'
-
-      u = {
-         'username': new_username,
-         'password_hash': bcrypt.generate_password_hash(request.form['password_first']),
-         'alignment': request.form['alignment'],
-         'signup_date': dt.timestamp(dt.now()),
-         }
-      db.users.insert_one(u)
+   if request.method == 'POST':
+      try:
+         # make sure that the user name is unique
+         new_username = request.form['username']
+         if new_username in db.users.distinct('username'):
+            # TODO proper error handling
+            return f"Could'nt add a new user. The user name {new_username} is already taken."
          
-   except Exception as e:
-      print(e)
+         # make sure that the two given passwords match
+         if not request.form['password_first'] == request.form['password_second']:
+            # TODO proper error handling
+            return 'The two given passwords do not match.'
 
-   return f'Added user {new_username} to user database.'
+         u = {
+            'username': new_username,
+            'password_hash': bcrypt.generate_password_hash(request.form['password_first']),
+            'alignment': request.form['alignment'],
+            'signup_date': dt.timestamp(dt.now()),
+            }
+         db.users.insert_one(u)
+            
+      except Exception as e:
+         print(e)
+
+      return f'Added user {new_username} to user database.'
+   else:
+      return f'Unsupported method {request.method}'
 
 @app.route('/check_password')
 def check_password():
