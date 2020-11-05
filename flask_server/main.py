@@ -5,7 +5,7 @@ import random
 from pymongo import MongoClient
 import gridfs
 
-from flask import Flask, render_template, request, jsonify, redirect, abort, send_file
+from flask import Flask, render_template, request, jsonify, redirect, abort, send_file, send_from_directory
 from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
 from werkzeug.wrappers import Response
@@ -13,6 +13,11 @@ from werkzeug.wrappers import Response
 # initialise flask and bcrypt
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route('/signup')
 def signup():
@@ -44,6 +49,7 @@ def add_user():
             
       except Exception as e:
          print(e)
+         return e
 
       return f'Added user {new_username} to user database.'
    else:
