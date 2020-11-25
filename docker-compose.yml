@@ -1,0 +1,25 @@
+version: '3'
+services:
+  unit:
+    build: .
+    restart: unless-stopped
+    ports:
+     - 8080:8000
+    depends_on:
+     - mongo
+    volumes:
+     - ./log/unit.log:/var/log/unit.log
+     - ./state:/var/lib/unit
+     - ./webapp:/www
+     - ./resources:/resources
+
+  mongo:
+    image: mongo:4.2.8
+    command:
+      - '--logpath'
+      - '/var/log/mongodb/mongodb.log'
+    restart: always
+    ports:
+     - 27017:27017
+    volumes:
+     - ./mongodata:/data/db
