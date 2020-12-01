@@ -8,10 +8,10 @@ class OAuthSignIn(object):
     providers = None
 
     def __init__(self, provider_name):
-	self.provider_name 	= provider_name
-        credentials 		= current_app.config['OAUTH_CREDENTIALS'][provider_name]
-        self.consumer_id 	= credentials['id']
-        self.consumer_secret 	= credentials['secret']
+        self.provider_name      = provider_name
+        credentials             = current_app.config['OAUTH_CREDENTIALS'][provider_name]
+        self.consumer_id        = credentials['id']
+        self.consumer_secret    = credentials['secret']
 
     def authorize(self):
         pass
@@ -20,8 +20,7 @@ class OAuthSignIn(object):
         pass
 
     def get_callback_url(self):
-        return url_for('oauth_callback', provider=self.provider_name,
-                       _external=True)
+        return url_for('oauth_callback', provider=self.provider_name, _external=True)
 
     @classmethod
     def get_provider(self, provider_name):
@@ -38,12 +37,12 @@ class GoogleSignIn(OAuthSignIn):
         googleinfo = urllib2.urlopen('https://accounts.google.com/.well-known/openid-configuration')
         google_params = json.load(googleinfo)
         self.service = OAuth2Service(
-                name			= 'google',
-                client_id		= self.consumer_id,
-                client_secret		= self.consumer_secret,
-                authorize_url		= google_params.get('authorization_endpoint'),
-                base_url		= google_params.get('userinfo_endpoint'),
-                access_token_url	= google_params.get('token_endpoint')
+                name                = 'google',
+                client_id           = self.consumer_id,
+                client_secret       = self.consumer_secret,
+                authorize_url       = google_params.get('authorization_endpoint'),
+                base_url            = google_params.get('userinfo_endpoint'),
+                access_token_url    = google_params.get('token_endpoint')
         )
 
     def authorize(self):
@@ -71,19 +70,19 @@ class FacebookSignIn(OAuthSignIn):
     def __init__(self):
         super(FacebookSignIn, self).__init__('facebook')
         self.service = OAuth2Service(
-            name		= 'facebook',
-            client_id		= self.consumer_id,
-            client_secret	= self.consumer_secret,
-            authorize_url	= 'https://graph.facebook.com/oauth/authorize',
-            access_token_url	= 'https://graph.facebook.com/oauth/access_token',
-            base_url		= 'https://graph.facebook.com/'
+            name                = 'facebook',
+            client_id           = self.consumer_id,
+            client_secret       = self.consumer_secret,
+            authorize_url       = 'https://graph.facebook.com/oauth/authorize',
+            access_token_url    = 'https://graph.facebook.com/oauth/access_token',
+            base_url            = 'https://graph.facebook.com/'
         )
 
     def authorize(self):
         return redirect(self.service.get_authorize_url(
-            scope		= 'email',
-            response_type	= 'code',
-            redirect_uri	= self.get_callback_url())
+            scope           = 'email',
+            response_type   =	 'code',
+            redirect_uri    = self.get_callback_url())
         )
 
     def callback(self):
@@ -112,13 +111,13 @@ class TwitterSignIn(OAuthSignIn):
     def __init__(self):
         super(TwitterSignIn, self).__init__('twitter')
         self.service = OAuth1Service(
-            name		= 'twitter',
-            consumer_key	= self.consumer_id,
-            consumer_secret	= self.consumer_secret,
-            request_token_url	= 'https://api.twitter.com/oauth/request_token',
-            authorize_url	= 'https://api.twitter.com/oauth/authorize',
-            access_token_url	= 'https://api.twitter.com/oauth/access_token',
-            base_url		= 'https://api.twitter.com/1.1/'
+            name                = 'twitter',
+            consumer_key        = self.consumer_id,
+            consumer_secret     = self.consumer_secret,
+            request_token_url   = 'https://api.twitter.com/oauth/request_token',
+            authorize_url       = 'https://api.twitter.com/oauth/authorize',
+            access_token_url    = 'https://api.twitter.com/oauth/access_token',
+            base_url            = 'https://api.twitter.com/1.1/'
         )
 
     def authorize(self):
