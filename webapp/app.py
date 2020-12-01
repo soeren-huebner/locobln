@@ -1,11 +1,16 @@
+# stdlib
 from datetime import datetime as dt
 import os
 import random
-
+# databases (mongodb for resources and sqlalchemy/sqlite for user data)
 from pymongo import MongoClient
-
-from flask import Flask, render_template, request, jsonify, redirect, abort, send_file, send_from_directory, url_for
+from flask_sqlalchemy import SQLAlchemy
+# flask stuff
+from flask import Flask, render_template, request, jsonify, redirect, abort, send_file, send_from_directory, url_for, flash
 from werkzeug.utils import secure_filename
+# oauth
+from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user
+from oauth import OAuthSignIn		# this is a local module
 
 #####################################
 ######## INIT ######################
@@ -13,22 +18,71 @@ from werkzeug.utils import secure_filename
 
 # initialise flask
 application = Flask(__name__)
+# this is a local configuration containing credentials/secrets (it's included in .gitignore)
+application.config.from_object('config.Config')
+
+# set up the user db
+user_db = SQLAlchemy(application)
+lm = LoginManager(application)
+# TODO change this to make it work with the webapp
+lm.login_view = 'index'
+user_db.create_all()
 
 # connect to mongo db
-#client = MongoClient(os.environ['DB_PORT_27017_TCP_ADDR'], 27017)
 client = MongoClient('mongodb://mongo:27017/')
 db = client.resource_database
 
-# setup the folder where uploaded videos are going to be stored
-RESOURCE_FOLDER = '/resources'
-application.config['RESOURCE_FOLDER'] = RESOURCE_FOLDER
-# constrain max size of uploads to 50MB
-application.config['MAX_CONTENT_LENGTH'] = 50 * 10**6
+#####################################
+####### USER DB ####################
+####################################
+
+class User(UserMixin, user_db.Model):
+    __tablename__ = 'users'
+    id = user_db.Column(user_db.Integer, primary_key=True)
+    social_id = user_db.Column(user_db.String(64), nullable=False, unique=True)
+    name = user_db.Column(user_db.String(64), nullable=False)
+    email = user_db.Column(user_db.String(64), nullable=True)
 
 #####################################
 ######## ROUTES ####################
 ####################################
 
+######### OAUTH
+@lm.user_loader
+def load_user(id):
+    return User.query.get(int(id))
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
+@app.route('/authorize/<provider>')
+def oauth_authorize(provider):
+    if not current_user.is_anonymous:
+        return redirect(url_for('index'))
+    oauth = OAuthSignIn.get_provider(provider)
+    return oauth.authorize()
+
+@app.route('/callback/<provider>')
+def oauth_callback(provider):
+    if not current_user.is_anonymous:
+        return redirect(url_for('index'))
+    oauth = OAuthSignIn.get_provider(provider)
+    social_id, username, email = oauth.callback()
+    if social_id is None:
+        flash('Authentication failed.')
+        return redirect(url_for('index'))
+    user = User.query.filter_by(social_id=social_id).first()
+    if not user:
+        user = User(social_id=social_id, name=username, email=email)
+        user_db.session.add(user)
+        user_db.session.commit()
+    login_user(user, True)
+    return redirect(url_for('index'))
+
+
+######## OTHER ROUTES
 @application.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(application.root_path, 'static'),
