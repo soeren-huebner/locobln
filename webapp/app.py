@@ -26,6 +26,7 @@ user_db = SQLAlchemy(application)
 lm = LoginManager(application)
 # TODO change this to make it work with the webapp
 lm.login_view = 'index'
+user_db.init_app(application)
 user_db.create_all()
 
 # connect to mongo db
@@ -52,19 +53,19 @@ class User(UserMixin, user_db.Model):
 def load_user(id):
     return User.query.get(int(id))
 
-@app.route('/logout')
+@application.route('/logout')
 def logout():
     logout_user()
     return redirect(url_for('index'))
 
-@app.route('/authorize/<provider>')
+@application.route('/authorize/<provider>')
 def oauth_authorize(provider):
     if not current_user.is_anonymous:
         return redirect(url_for('index'))
     oauth = OAuthSignIn.get_provider(provider)
     return oauth.authorize()
 
-@app.route('/callback/<provider>')
+@application.route('/callback/<provider>')
 def oauth_callback(provider):
     if not current_user.is_anonymous:
         return redirect(url_for('index'))

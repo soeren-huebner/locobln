@@ -12,6 +12,7 @@ services:
      - ./state:/var/lib/unit
      - ./webapp:/www
      - ./resources:/resources
+     - ./userdb:/db
 
   mongo:
     image: mongo:4.2.8

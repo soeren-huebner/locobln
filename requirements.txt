@@ -3,5 +3,8 @@ werkzeug
 pymongo
 SQLAlchemy
 Flask-SQLAlchemy
-rauth
 Flask-Login
+
+Authlib
+cryptography
+requests

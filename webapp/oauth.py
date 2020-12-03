@@ -1,4 +1,5 @@
-import json, urllib2
+import json
+from urllib.request import urlopen
 
 from rauth import OAuth1Service, OAuth2Service
 from flask import current_app, url_for, request, redirect, session
@@ -34,7 +35,7 @@ class OAuthSignIn(object):
 class GoogleSignIn(OAuthSignIn):
     def __init__(self):
         super(GoogleSignIn, self).__init__('google')
-        googleinfo = urllib2.urlopen('https://accounts.google.com/.well-known/openid-configuration')
+        googleinfo = urlopen('https://accounts.google.com/.well-known/openid-configuration')
         google_params = json.load(googleinfo)
         self.service = OAuth2Service(
                 name                = 'google',
@@ -47,7 +48,8 @@ class GoogleSignIn(OAuthSignIn):
 
     def authorize(self):
         return redirect(self.service.get_authorize_url(
-            scope='email',
+            scope='email profile',
+            #scope=["https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"],
             response_type='code',
             redirect_uri=self.get_callback_url())
             )
@@ -62,8 +64,10 @@ class GoogleSignIn(OAuthSignIn):
                      },
                 decoder = json.loads
         )
-        me = oauth_session.get('').json()
+        #me = oauth_session.get('').json()
+        me = oauth_session.get('https://www.googleapis.com/oauth2/v1/userinfo').content
         return me['id'], me['name'], me['email']
+        #return me.getId(), me.getName(), me.getEmail()
 
 
 class FacebookSignIn(OAuthSignIn):
@@ -81,7 +85,7 @@ class FacebookSignIn(OAuthSignIn):
     def authorize(self):
         return redirect(self.service.get_authorize_url(
             scope           = 'email',
-            response_type   =	 'code',
+            response_type   = 'code',
             redirect_uri    = self.get_callback_url())
         )
 
