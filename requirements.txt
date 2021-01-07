@@ -5,6 +5,12 @@ SQLAlchemy
 Flask-SQLAlchemy
 Flask-Login
 
-Authlib
+flask-cors
+
 cryptography
+six
+
+Authlib
 requests
+
+flask-wtf

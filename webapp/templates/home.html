@@ -1,0 +1,13 @@
+<style>
+  pre { max-width: 100%; overflow: scroll; }
+</style>
+{% if user %}
+<div>
+  {{ user|tojson }}
+</div>
+<a href="/logout">logout</a>
+{% else %}
+<a href="/login/twitter">Twitter Login</a>
+<a href="/login/google">Google Login</a>
+<a href="/login/facebook">Facebook Login</a>
+{% endif %}

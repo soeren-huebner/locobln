@@ -4,13 +4,22 @@ import os
 import random
 # databases (mongodb for resources and sqlalchemy/sqlite for user data)
 from pymongo import MongoClient
-from flask_sqlalchemy import SQLAlchemy
+#from flask_sqlalchemy import SQLAlchemy
 # flask stuff
-from flask import Flask, render_template, request, jsonify, redirect, abort, send_file, send_from_directory, url_for, flash
+from flask import Flask, render_template, request, jsonify, redirect, abort, send_file, send_from_directory, url_for, flash, session
 from werkzeug.utils import secure_filename
 # oauth
-from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user
-from oauth import OAuthSignIn		# this is a local module
+from authlib.integrations.flask_client import OAuth, OAuthError
+# to prevent cors errors
+from flask_cors import CORS
+
+# WTForms
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms.validators import DataRequired
+
+# do I need this?
+#from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user
 
 #####################################
 ######## INIT ######################
@@ -22,12 +31,42 @@ application = Flask(__name__)
 application.config.from_object('config.Config')
 
 # set up the user db
-user_db = SQLAlchemy(application)
-lm = LoginManager(application)
+#user_db = SQLAlchemy(application)
+#lm = LoginManager(application)
 # TODO change this to make it work with the webapp
-lm.login_view = 'index'
-user_db.init_app(application)
-user_db.create_all()
+#lm.login_view = 'index'
+#user_db.init_app(application)
+#user_db.create_all()
+
+CORS(application)
+
+oauth = OAuth(application)
+oauth.register(
+    name='twitter',
+    api_base_url='https://api.twitter.com/1.1/',
+    request_token_url='https://api.twitter.com/oauth/request_token',
+    access_token_url='https://api.twitter.com/oauth/access_token',
+    authorize_url='https://api.twitter.com/oauth/authenticate',
+    fetch_token=lambda: session.get('token'),  # DON'T DO IT IN PRODUCTION
+)
+oauth.register(
+    name='google',
+    server_metadata_url=application.config['GOOGLE_CONF_URL'],
+    client_kwargs={
+        'scope': 'openid email profile'
+    }
+)
+oauth.register(
+    name='facebook',
+    api_base_url='https://graph.facebook.com/',
+    request_token_url=None,
+    access_token_url='/oauth/access_token',
+    authorize_url='https://www.facebook.com/dialog/oauth',
+    consumer_key=application.config['FACEBOOK_CLIENT_ID'],
+    consumer_secret=application.config['FACEBOOK_CLIENT_SECRET'],
+    request_token_params={'scope': 'id,email,name'},
+    fetch_token=lambda: session.get('token'),  # DON'T DO IT IN PRODUCTION
+)
 
 # connect to mongo db
 client = MongoClient('mongodb://mongo:27017/')
@@ -37,50 +76,111 @@ db = client.resource_database
 ####### USER DB ####################
 ####################################
 
-class User(UserMixin, user_db.Model):
-    __tablename__ = 'users'
-    id = user_db.Column(user_db.Integer, primary_key=True)
-    social_id = user_db.Column(user_db.String(64), nullable=False, unique=True)
-    name = user_db.Column(user_db.String(64), nullable=False)
-    email = user_db.Column(user_db.String(64), nullable=True)
+#class User(UserMixin, user_db.Model):
+#    __tablename__ = 'users'
+#    id = user_db.Column(user_db.Integer, primary_key=True)
+#    social_id = user_db.Column(user_db.String(64), nullable=False, unique=True)
+#    name = user_db.Column(user_db.String(64), nullable=False)
+#    email = user_db.Column(user_db.String(64), nullable=True)
+
+
+#####################################
+######## WTForms ###################
+####################################
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    remember_me = BooleanField('Remember Me')
+    submit = SubmitField('Sign In')
+
+
+
 
 #####################################
 ######## ROUTES ####################
 ####################################
 
-######### OAUTH
-@lm.user_loader
-def load_user(id):
-    return User.query.get(int(id))
+
+@application.errorhandler(OAuthError)
+def handle_error(error):
+    return render_template('error.html', error=error)
+
+
+@application.route('/login2')
+def login2():
+    form = LoginForm()
+    return render_template('login.html', title='Sign In', form=form)
+
+
+@application.route('/')
+def homepage():
+    user = session.get('user')
+    return render_template('home.html', user=user)
+    #return redirect('http://a82150d.online-server.cloud/login')
+
+
+@application.route('/login/<provider>')
+def login(provider):
+    redirect_uri = url_for('auth', provider=provider, _external=True)
+    if provider == 'twitter':
+        return oauth.twitter.authorize_redirect(redirect_uri)
+    elif provider == 'google':
+        return oauth.google.authorize_redirect(redirect_uri)
+    elif provider == 'facebook':
+        return oauth.facebook.authorize_redirect(redirect_uri)
+    else:
+        # TODO proper error handling (unsupported provider)
+        return redirect('/')
+
+
+@application.route('/auth/<provider>')
+def auth(provider):
+    if provider == 'twitter':
+        token = oauth.twitter.authorize_access_token()
+        url = 'account/verify_credentials.json'
+        #resp = oauth.twitter.get(url, params={'skip_status': True, 'include_email': True})
+        resp = oauth.twitter.get(url, params={'include_email': True})
+        user = resp.json()
+    elif provider == 'facebook':
+        token = oauth.facebook.authorize_access_token()
+        resp = oauth.facebook.get('/me')
+        user = resp.json()
+    elif provider == 'google':
+        token = oauth.google.authorize_access_token()
+        user = oauth.google.parse_id_token(token)
+    else:
+        # TODO proper error handling (unsupported provider)
+        return redirect('/')
+    # DON'T DO IT IN PRODUCTION, SAVE INTO DB IN PRODUCTION
+    session['token'] = token
+    session['user'] = user
+    return redirect('/')
+
 
 @application.route('/logout')
 def logout():
-    logout_user()
-    return redirect(url_for('index'))
+    session.pop('token', None)
+    session.pop('user', None)
+    return redirect('/')
 
-@application.route('/authorize/<provider>')
-def oauth_authorize(provider):
-    if not current_user.is_anonymous:
-        return redirect(url_for('index'))
-    oauth = OAuthSignIn.get_provider(provider)
-    return oauth.authorize()
 
-@application.route('/callback/<provider>')
-def oauth_callback(provider):
-    if not current_user.is_anonymous:
-        return redirect(url_for('index'))
-    oauth = OAuthSignIn.get_provider(provider)
-    social_id, username, email = oauth.callback()
-    if social_id is None:
-        flash('Authentication failed.')
-        return redirect(url_for('index'))
-    user = User.query.filter_by(social_id=social_id).first()
-    if not user:
-        user = User(social_id=social_id, name=username, email=email)
-        user_db.session.add(user)
-        user_db.session.commit()
-    login_user(user, True)
-    return redirect(url_for('index'))
+@application.route('/user', methods=['GET'])
+def user():
+    user = session.get('user')
+    user_info = {
+        'id':           None,
+        'name':         None,
+        'email':        None,
+    }
+    if user:
+        for key in user_info.keys():
+            try:
+                user_info[key] = user[key]
+            except KeyError:
+                continue
+    response = jsonify(user_info)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 
 ######## OTHER ROUTES
@@ -89,12 +189,14 @@ def favicon():
     return send_from_directory(os.path.join(application.root_path, 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
+
 @application.route('/upload')
 def upload():
-   # display the upload web page
-   return render_template('upload.html')
+    # display the upload web page
+    return render_template('upload.html')
 
-@application.route('/uploader', methods = ['POST', 'DELETE'])
+
+@application.route('/uploader', methods=['POST', 'DELETE'])
 def upload_resource():
    if request.method == 'POST':
       try:
@@ -126,9 +228,11 @@ def upload_resource():
 
    return 'Finished the file upload.'
 
+
 @application.route('/tags', methods=['GET'])
 def get_all_tags():
-   return {'data' : db.resource_collection.distinct('tags')}
+   return {'data': db.resource_collection.distinct('tags')}
+
 
 @application.route('/markers', methods=['GET', 'POST'])
 def get_markers():
@@ -180,7 +284,7 @@ def get_resource(resource_name):
    except FileNotFoundError:
       abort(404)
 
-@application.route('/')
-def index():
-   # display the homepage
-   return render_template('index.html')
+#@application.route('/')
+#def index():
+#   # display the homepage
+#   return render_template('index.html')
